@@ -1,4 +1,9 @@
+#Folders
 bin/
 obj/
-.idea/
+.sonar/
 .vs/
+.idea/
+
+#Files
+*.tmp

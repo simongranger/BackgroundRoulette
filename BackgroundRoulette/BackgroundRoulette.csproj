@@ -6,4 +6,10 @@
         <ApplicationIcon>images\Question Block.ico</ApplicationIcon>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Remove="images\BackgroundRoulette_thumb.jpg"/>
+        <EmbeddedResource Include="images\BackgroundRoulette_thumb.jpg">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </EmbeddedResource>
+    </ItemGroup>
 </Project>

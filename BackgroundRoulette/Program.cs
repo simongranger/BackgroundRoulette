@@ -45,20 +45,17 @@ namespace BackgroundRoulette
 
                 // Select random background.
                 // We keep track of the last few distributed backgrounds and will not distribute them.
-                List<string> backgroundTracker = new List<string>();
+                var backgroundTracker = new List<string>();
 
                 // Read tracker file if it exists and crop it if required.
                 if (File.Exists(Tracker))
                 {
-                   backgroundTracker = File.ReadAllLines(Tracker).ToList();
-                   while (backgroundTracker.Count >= backgrounds.Length - 1)
-                   {
-                       backgroundTracker.RemoveAt(0);
-                   }
+                    backgroundTracker = File.ReadAllLines(Tracker).ToList();
+                    while (backgroundTracker.Count >= backgrounds.Length - 2) backgroundTracker.RemoveAt(0);
                 }
 
                 var rand = new Random();
-                bool success = false;
+                var success = false;
                 int index;
                 string backgroundName;
 
@@ -72,6 +69,7 @@ namespace BackgroundRoulette
                         backgroundTracker.Add(backgroundName);
                         success = true;
                     }
+
                     Console.Write("...");
                 } while (!success);
 
@@ -101,8 +99,8 @@ namespace BackgroundRoulette
 
             var appDataPath = Environment.ExpandEnvironmentVariables("%APPDATA%");
             var destFileName = Path.Combine(appDataPath + TeamsPath, BackgroundFileName);
-            var sourceThumbnail = Path.Combine(backgroundLibraryPath + "\\Thumbnail\\", ThumbnailName);
-            var destThumbnail = Path.Combine(appDataPath + TeamsPath, BackgroundFileName);
+            var sourceThumbnail = "images\\" + ThumbnailName;
+            var destThumbnail = Path.Combine(appDataPath + TeamsPath, ThumbnailName);
 
             // Copy background file.
             File.Copy(background, destFileName, true);
