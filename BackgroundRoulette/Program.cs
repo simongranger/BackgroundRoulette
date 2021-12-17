@@ -12,7 +12,7 @@ namespace BackgroundRoulette
         private const string TeamsPath = "\\Microsoft\\Teams\\Backgrounds\\Uploads";
         private const string BackgroundFileName = "BackgroundRoulette.jpg";
         private const string ThumbnailName = "BackgroundRoulette_thumb.jpg";
-        private const string Tracker = "Tracker.txt";
+        private const string TrackerFileName = "Tracker.txt";
 
         private static void Main(string[] args)
         {
@@ -20,7 +20,10 @@ namespace BackgroundRoulette
             if (args.Length > 0) backgroundLibraryPath = args[0];
 
             var background = GetRandomBackground(backgroundLibraryPath);
-            CopyFileToTeams(background, backgroundLibraryPath);
+            if (background != null)
+            {
+                CopyFileToTeams(background, backgroundLibraryPath);
+            }
 
             // Sleep to let user see the selected background.
             Thread.Sleep(3000);
@@ -30,14 +33,32 @@ namespace BackgroundRoulette
         {
             try
             {
+                if (!Directory.Exists(backgroundLibraryPath))
+                {
+                    Console.WriteLine("********");
+                    Console.WriteLine("Error: Cannot access target folder \'{0}\'", backgroundLibraryPath);
+                    Console.WriteLine("********");
+                    Thread.Sleep(3000);
+                    return null;
+                }
+
                 // Only get jpg files.
                 var backgrounds = Directory.GetFiles(backgroundLibraryPath, "*.jpg");
+
+                if (backgrounds.Length == 0)
+                {
+                    Console.WriteLine("********");
+                    Console.WriteLine("Error: Could not find any jpg file in \'{0}\'", backgroundLibraryPath);
+                    Console.WriteLine("********");
+                    Thread.Sleep(3000);
+                    return null;
+                }
 
                 // Display available backgrounds.
                 Console.WriteLine("Available backgrounds:");
                 for (var i = 0; i < backgrounds.Length; i++)
                     Console.WriteLine("{0}", backgrounds[i].Replace(backgroundLibraryPath + "\\", ""));
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
 
                 // Create anticipation...
                 Console.Write("Selecting ...");
@@ -46,11 +67,12 @@ namespace BackgroundRoulette
                 // Select random background.
                 // We keep track of the last few distributed backgrounds and will not distribute them.
                 var backgroundTracker = new List<string>();
+                var trackerLocation = Path.Combine(backgroundLibraryPath, TrackerFileName);
 
                 // Read tracker file if it exists and crop it if required.
-                if (File.Exists(Tracker))
+                if (File.Exists(trackerLocation))
                 {
-                    backgroundTracker = File.ReadAllLines(Tracker).ToList();
+                    backgroundTracker = File.ReadAllLines(trackerLocation).ToList();
                     while (backgroundTracker.Count >= backgrounds.Length - 2) backgroundTracker.RemoveAt(0);
                 }
 
@@ -71,10 +93,11 @@ namespace BackgroundRoulette
                     }
 
                     Console.Write("...");
+                    Thread.Sleep(100);
                 } while (!success);
 
                 // Update tracker file.
-                File.WriteAllLines(Tracker, backgroundTracker);
+                File.WriteAllLines(trackerLocation, backgroundTracker);
 
                 Console.WriteLine("");
                 Console.WriteLine("The selected background was {0}!", backgroundName);
@@ -91,12 +114,6 @@ namespace BackgroundRoulette
 
         private static void CopyFileToTeams(string background, string backgroundLibraryPath)
         {
-            if (background == null)
-            {
-                Console.WriteLine("Could not find a jpg background file");
-                return;
-            }
-
             var appDataPath = Environment.ExpandEnvironmentVariables("%APPDATA%");
             var destFileName = Path.Combine(appDataPath + TeamsPath, BackgroundFileName);
             var sourceThumbnail = "images\\" + ThumbnailName;
